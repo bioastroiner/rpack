@@ -1,0 +1,4 @@
+[rust-analyzer]
+check_on_save = true
+inlay_hints = { enable = true, show_macro_defs = true }
+assist = { enable = true, import_path_prefix = "std::" }

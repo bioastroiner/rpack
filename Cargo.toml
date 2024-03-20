@@ -1,0 +1,13 @@
+[package]
+name = "rpack"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+curseforge = "0.3.1"
+jars = "0.1.1"
+once_cell = "1.19.0"
+serde = "1.0.197"
+serde_json = "1.0.114"
