@@ -68,7 +68,7 @@ fn test_mcinstance() {
 
     [modloader]
     type = "forge"
-    version = 1614
+    version = "1614"
     minecraftVersion = "1.7.10"
 
     [pack]
@@ -83,7 +83,7 @@ fn test_mcinstance() {
 
     [modloader]
     type = "forge"
-    version = 1614
+    version = "1614"
     minecraftVersion = "1.7.10"
 
     [pack]
