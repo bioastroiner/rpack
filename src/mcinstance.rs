@@ -92,6 +92,7 @@ fn test_mcinstance() {
     description = "A short description, only on one line"
     version = "0.1"
     };
+    //todo("Make this pass");
     assert_eq!(
         read_metadata(&meta_toml).mod_loader.minecraft_version,
         meta["modLoader"]["minecraftVersion"].as_str().unwrap()
