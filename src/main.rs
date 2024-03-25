@@ -1,10 +1,10 @@
 use std::{
-    borrow::Borrow,
-    ffi::OsStr,
-    path::{self, Path, PathBuf}, str::FromStr,
+    io::Read,
+    path::{self, Path, PathBuf},
 };
 
 use clap::{arg, Arg, ArgAction, Command};
+use reqwest::Method;
 
 mod curse;
 mod mcinstance;
@@ -77,17 +77,21 @@ fn main() {
         .get_matches();
     match cli.subcommand() {
         Some(("add", add_args)) => {
-            todo!("retrive a curse/or/modrinth project id and file id, /or/ retrive a url");
-            todo!("retrive optional name");
-            todo!("retrive optional hash");
-            todo!("retrive optional alternative output file");
+            // todo!("retrive a curse/or/modrinth project id and file id, /or/ retrive a url");
+            // todo!("retrive optional name");
+            // todo!("retrive optional hash");
+            // todo!("retrive optional alternative output file");
         }
         Some(("search", search_args)) => {
-            // todo!("search curseforge");
-            // let vals : Vec<Vec<&String>> = search_args.get_occurrences("jar").unwrap().map(Iterator::collect).collect();
             let vals: Vec<&String> = search_args.get_many::<String>("jar").unwrap().collect();
             let all_jars = jars_from_paths(&vals);
-            println!("found jars: {:#?}", all_jars.iter().map(|f|f.file_name().unwrap()).collect::<Vec<_>>());
+            println!(
+                "found jars: {:#?}",
+                all_jars
+                    .iter()
+                    .map(|f| f.file_name().unwrap())
+                    .collect::<Vec<_>>()
+            );
         }
         _ => unreachable!(),
     }
@@ -121,8 +125,31 @@ fn jars_from_paths(paths: &Vec<&String>) -> Vec<PathBuf> {
     let jars: Vec<PathBuf> = paths
         .clone()
         .iter()
-        .map(|s|PathBuf::from(s))
+        .map(|s| PathBuf::from(s))
         .filter(|p| p.extension().is_some_and(|s| s.to_str().eq(&Some("jar"))))
         .collect();
     [jars_dirs, jars].concat()
+}
+
+//todo version search
+fn search_curse_forge(mod_name: &str) {
+    let api = "$2a$10$bL4bIL5pUWqfcO7KQtnMReakwtfHbNKh6v1uTpKlzhwoueEJQnPnm"; // stolen from polymc
+    let curse_link = r#"https://api.curseforge.com/v1/mods/search"#;
+    let client = reqwest::blocking::Client::new();
+    let mut res = client
+        .request(Method::GET, curse_link)
+        .header("x-api-key", api)
+        .header("Accept", "application/json")
+        .query(&[("gameID", 432)])
+        .query(&[("searchFilter", mod_name), ("gameVersion", "1.7.10")])
+        .send()
+        .expect("failed to send request");
+    let mut body = String::new();
+    res.read_to_string(&mut body).ok();
+    println!("Status: {}", res.status());
+    println!("Headers:\n{:#?}", res.headers());
+    println!(
+        "Body:\n{:#?}",
+        serde_json::from_str::<serde_json::Value>(body.as_str())
+    );
 }
