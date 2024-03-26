@@ -1,9 +1,9 @@
 use std::{
     io::Read,
-    path::{self, Path, PathBuf},
+    path::{Path, PathBuf},
 };
 
-use clap::{arg, Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, Command};
 use reqwest::Method;
 
 mod curse;
@@ -102,6 +102,7 @@ fn main() {
 /// the input is valid directory and discards it
 /// if the input is also a valid jar and not a dir
 /// it will be included in the return
+// todo move to one own's module
 fn jars_from_paths(paths: &Vec<&String>) -> Vec<PathBuf> {
     let dirs: Vec<&Path> = paths
         .clone()
@@ -132,6 +133,8 @@ fn jars_from_paths(paths: &Vec<&String>) -> Vec<PathBuf> {
 }
 
 //todo version search
+//todo parse its json result
+// todo move to one own's module
 fn search_curse_forge(mod_name: &str) {
     let api = "$2a$10$bL4bIL5pUWqfcO7KQtnMReakwtfHbNKh6v1uTpKlzhwoueEJQnPnm"; // stolen from polymc
     let curse_link = r#"https://api.curseforge.com/v1/mods/search"#;
@@ -142,14 +145,17 @@ fn search_curse_forge(mod_name: &str) {
         .header("Accept", "application/json")
         .query(&[("gameID", 432)])
         .query(&[("searchFilter", mod_name), ("gameVersion", "1.7.10")])
-        .send()
-        .expect("failed to send request");
-    let mut body = String::new();
-    res.read_to_string(&mut body).ok();
-    println!("Status: {}", res.status());
-    println!("Headers:\n{:#?}", res.headers());
-    println!(
-        "Body:\n{:#?}",
-        serde_json::from_str::<serde_json::Value>(body.as_str())
-    );
+        .send();
+    if let Some(mut res) = resp.ok() {
+        let mut body = String::new();
+        res.read_to_string(&mut body).ok();
+        println!("Status: {}", res.status());
+        println!("Headers:\n{:#?}", res.headers());
+        println!(
+            "Body:\n{:#?}",
+            serde_json::from_str::<serde_json::Value>(body.as_str())
+        );
+    } else {
+        println!("Failed to send request for {}", mod_name);
+    }
 }
