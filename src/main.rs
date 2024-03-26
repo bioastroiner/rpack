@@ -85,13 +85,34 @@ fn main() {
         Some(("search", search_args)) => {
             let vals: Vec<&String> = search_args.get_many::<String>("jar").unwrap().collect();
             let all_jars = jars_from_paths(&vals);
-            println!(
-                "found jars: {:#?}",
-                all_jars
-                    .iter()
-                    .map(|f| f.file_name().unwrap())
-                    .collect::<Vec<_>>()
-            );
+            let all_jars_names = all_jars
+                .iter()
+                .map(|f| f.file_name().unwrap())
+                .collect::<Vec<_>>();
+            let all_jars_parsed: Vec<_> = all_jars_names
+                .iter()
+                .map(|f| {
+                    f.to_str()
+                        .expect(&format!("Failed to Parse {:?}", f))
+                        .replace(".jar", "")
+                })
+                // .map(|f| f.split('-').map(|f| String::from(f)).collect::<Vec<_>>())
+                // fuck u borrowchecker (:
+                .filter_map(|f| match f.split_once('-') {
+                    Some((s1, s2)) => Some((String::from(s1), String::from(s2))),
+                    _ => None,
+                })
+                // .map(|f| f.)
+                .collect();
+
+            for ele in all_jars_parsed {
+                //todo!("make searching less taxing on the server")
+                search_curse_forge(&ele.0);
+            }
+            // println!(
+            //     "found jars: {:#?} ===> {:?}\n",
+            //     all_jars_names, all_jars_parsed
+            // );
         }
         _ => unreachable!(),
     }
@@ -139,7 +160,7 @@ fn search_curse_forge(mod_name: &str) {
     let api = "$2a$10$bL4bIL5pUWqfcO7KQtnMReakwtfHbNKh6v1uTpKlzhwoueEJQnPnm"; // stolen from polymc
     let curse_link = r#"https://api.curseforge.com/v1/mods/search"#;
     let client = reqwest::blocking::Client::new();
-    let mut res = client
+    let resp = client
         .request(Method::GET, curse_link)
         .header("x-api-key", api)
         .header("Accept", "application/json")
